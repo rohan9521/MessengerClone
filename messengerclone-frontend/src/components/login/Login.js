@@ -14,24 +14,34 @@ import SockJS from 'sockjs-client';
 import userEvent from '@testing-library/user-event';
 function Login(props) {
     var stompClient = null;
-    const navigate = useNavigate()
-    const [user, setUser] = useState({
+    const [email, setEmail] = useState('')
+    const [name, setName] = useState('')
+    const [password, setPassword] = useState('')
 
-    })
+    const navigate = useNavigate()
+    const [user, setUser] = useState({})
     let navigateToHomePage = () => {
         navigate('/feed/home')
     }
-    let setUserInStore = () => {
-        axios
-            .post("http://localhost:8080/users/saveUser", user)
-            .then( (response) => {
+    let setUserInStore = async () => {
+        await axios
+            .post("http://localhost:8080/users/saveUser", {
+                name: name,
+                email: email,
+                password: password
+            })
+            .then(async (response) => {
                 console.log(response)
                 props.setUser(response.data)
-                setUser({...response.data,userId:response.data.userId})
-                console.log("response" + JSON.stringify(response.data))
-                console.log("user" + JSON.stringify(user))
+                // await setUser({
+                //   ...response.data
+                // })
+
+                console.log("response" + JSON.stringify(response.data.userId))
+                console.log("user" + JSON.stringify(props))
                 connect()
             })
+        props.setStompClient(stompClient)
         navigateToHomePage()
     }
 
@@ -41,11 +51,20 @@ function Login(props) {
         stompClient.connect({}, onConnected, () => { });
     }
 
+    let onPrivateMessageRecieved = (payload) => {
+        console.log("privateMessagePayload" + JSON.stringify(payload))
+        props.setUserMessages({
+            ...payload.body
+        })
+    }
+
     const onConnected = () => {
-        console.log("connected")
-        stompClient.subscribe('/user/' + user.userId + '/private-message', () => { });
+        console.log("connected" + props.user.userId)
+        stompClient.subscribe('/user/' + props.user.userId + '/private-message', onPrivateMessageRecieved);
         userJoin();
     }
+
+
 
     const userJoin = () => {
         var chatMessage = {
@@ -61,6 +80,7 @@ function Login(props) {
         //     .then(()=>{
         //         console.log("deleted")
         //     })
+        console.log("useeffectUser" + JSON.stringify(user))
     })
 
     return (
@@ -82,9 +102,9 @@ function Login(props) {
                     <Typography variant="h5" component="div">
                         Login
                     </Typography>
-                    <TextField onChange={(e) => { setUser(user => ({ ...user, name: e.target.value })) }} id="standard-helperText" fullWidth={true} label="UserName" variant="standard" />
-                    <TextField onChange={(e) => { setUser(user => ({ ...user, email: e.target.value })) }} id="standard-helperText" fullWidth={true} label="Password" variant="standard" />
-                    <TextField onChange={(e) => { setUser(user => ({ ...user, password: e.target.value })) }} id="standard-helperText" fullWidth={true} label="UserName" variant="standard" />
+                    <TextField onChange={(e) => { setName(e.target.value) }} id="standard-helperText" fullWidth={true} label="UserName" variant="standard" />
+                    <TextField onChange={(e) => { setEmail(e.target.value) }} id="standard-helperText" fullWidth={true} label="Email" variant="standard" />
+                    <TextField onChange={(e) => { setPassword(e.target.value) }} id="standard-helperText" fullWidth={true} label="password" variant="standard" />
                 </CardContent>
                 <CardActions>
                     <Button onClick={setUserInStore} style={{ color: 'blue' }} variant="outlined">Login</Button>
@@ -96,12 +116,32 @@ function Login(props) {
 
 const mapStateToProps = (state) => {
     return {
-        user: state.user
+        user: state.userReducer.user
     }
 }
 const mapDispatchToProps = (dispatch) => {
     return {
-        setUser: (user) => { dispatch({ payload: user, type: "SET_USER" }) }
+        setUser: (user) => {
+            dispatch({
+                payload: user,
+                type: "SET_USER"
+            })
+        },
+        setStompClient: (stompClient) => {
+            dispatch({
+                payload: stompClient,
+                type: "SET_STOMP_CLIENT"
+            })
+        },
+        setUserMessages: (chatMessage) => {
+            dispatch({
+                payload: {
+                    senderUserId: chatMessage.senderUserId,
+                    message: chatMessage.content
+                },
+                type: "ADD_TO_CHAT_USER_LIST"
+            })
+        }
     }
 }
 

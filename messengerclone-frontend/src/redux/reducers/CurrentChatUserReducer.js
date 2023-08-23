@@ -7,10 +7,12 @@ const initialState = {
 }
 
 const CurrentChatUserReducer = (state = initialState, action) => {
+    
     if (action.type == "SET_CURRENT_CHAT_USER") {
-        state.currentChatUser = action.payload
+        state.currentChatUser = {...action.payload}
     }
-    return state
+    console.log(JSON.stringify(state))
+    return {...state}
 }
 
 export default CurrentChatUserReducer

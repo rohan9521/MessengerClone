@@ -88,7 +88,9 @@ export default function NavBar() {
   let navigateToChat = ()=>{
     navigate("/feed/home/")
   }
-
+  let navigateToSearch = ()=>{
+    navigate("/feed/search")
+  }
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
@@ -204,6 +206,7 @@ export default function NavBar() {
               size="large"
               aria-label="show 17 new notifications"
               color="inherit"
+              onClick={navigateToSearch}
             >
               <Badge badgeContent={17} color="error">
                 <NotificationsIcon />
