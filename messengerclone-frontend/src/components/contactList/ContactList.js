@@ -2,30 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import axios from 'axios'
 
+import fetchAllUsers from '../../redux/actions/FetchUsersAction'
+
 function ContactList(props) {
+  console.log(JSON.stringify(props))
   const [chatUserList, setChatUserList] = useState([])
-
+  const [userIdList, setUserIdList] = useState(props.chatUserList.userIdList)
   useEffect(() => {
-    console.log(JSON.stringify({
-      userIdList: props.chatUserList.userIdList
-    }))
-
-    axios.interceptors.request.use(request => {
-      console.log('Starting Request', JSON.stringify(request, null, 2))
-      return request
-    })
-      axios.post("http://localhost:8080/users/getUsersByIds",
-        { 
-          userIdList: props.chatUserList.userIdList 
-        })
-      .then((response) => {
-        console.log(JSON.stringify(response))
-        setChatUserList(response.data)
-      })
-      .catch((error) => {
-        console.log(JSON.stringify(error))
-      })
-  }, [])
+   props.fetchUserObjectList(props.chatUserList.userIdList)
+  }, [props.chatUserList.userIdList])
 
   let openUserChat = (user) => {
     console.log(user)
@@ -41,26 +26,27 @@ function ContactList(props) {
       }}
     >
       {
-
-        chatUserList.map((user) => (
-          <div
-            style={{
-              border: 'solid blue 2px',
-              borderRadius: '10px'
-            }}
-            onClick={() => { openUserChat(user) }}
-          >
-            <p style={{wordBreak:'break-all'}}>{JSON.stringify(user)}</p>
-          </div>
-        ))
+       props.chatUserObjectList.map((user) => (
+            <div
+              style={{
+                border: 'solid blue 2px',
+                borderRadius: '10px',
+                padding:'1%',
+                margin: '2%'
+              }}
+              onClick={() => { openUserChat(user) }}
+            >
+              <p style={{ wordBreak: 'break-all' }}>{user.email}</p>
+            </div>
+       ))
       }
-
     </div>
   )
 }
 const mapStateToProps = (state) => {
   return {
-    chatUserList: state.chatUserListReducer.chatUserList
+    chatUserList: state.chatUserListReducer.chatUserList,
+    chatUserObjectList : state.chatUserObjectListReducer.chatUserObjectList
   }
 }
 
@@ -68,9 +54,12 @@ const mapDispatchToProps = (dispatch) => {
   return {
     setCurrentChatUser: (user) => {
       dispatch({
-        payload: {...user},
+        payload: { ...user },
         type: "SET_CURRENT_CHAT_USER"
       })
+    },
+    fetchUserObjectList: (userIdList) => {
+      dispatch(fetchAllUsers(userIdList))
     }
   }
 }

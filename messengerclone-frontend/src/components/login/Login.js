@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -19,59 +20,52 @@ function Login(props) {
     const [password, setPassword] = useState('')
 
     const navigate = useNavigate()
-    const [user, setUser] = useState({})
+    const [user, setUser] = useState()
+    const [connected,setConnected] = useState(false)
     let navigateToHomePage = () => {
         navigate('/feed/home')
     }
     let setUserInStore = async () => {
+        console.log(JSON.stringify(props))
+        //{
+        //     name: name,
+        //     email: email,
+        //     password: password
+        // }
         await axios
-            .post("http://localhost:8080/users/saveUser", {
-                name: name,
-                email: email,
-                password: password
-            })
-            .then(async (response) => {
+            .get("http://localhost:8080/users/getUserByEmail/" + email)
+            .then((response) => {
                 console.log(response)
-                props.setUser(response.data)
+                setUser({
+                    ...response.data
+                }
+                )
+                props.setUser({ ...response.data })
+
+                console.log(JSON.stringify(props))
                 // await setUser({
                 //   ...response.data
                 // })
 
                 console.log("response" + JSON.stringify(response.data.userId))
                 console.log("user" + JSON.stringify(props))
-                connect()
+                setConnected(true)
+             //   connect(response.data.userId)
+               
             })
-        props.setStompClient(stompClient)
-        navigateToHomePage()
+
+
     }
 
-    const connect = () => {
-        let Sock = new SockJS('http://localhost:8080/ws');
-        stompClient = over(Sock);
-        stompClient.connect({}, onConnected, () => { });
-    }
-
-    let onPrivateMessageRecieved = (payload) => {
-        console.log("privateMessagePayload" + JSON.stringify(payload))
-        props.setUserMessages({
-            ...payload.body
-        })
-    }
-
-    const onConnected = () => {
-        console.log("connected" + props.user.userId)
-        stompClient.subscribe('/user/' + props.user.userId + '/private-message', onPrivateMessageRecieved);
-        userJoin();
-    }
-
+ 
 
 
     const userJoin = () => {
-        var chatMessage = {
-            senderName: user.name,
-            status: "JOIN"
-        };
-        stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
+        // var chatMessage = {
+        //     senderName: user.name,
+        //     status: "JOIN"
+        // };
+        // stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
     }
 
     useEffect(() => {
@@ -80,8 +74,18 @@ function Login(props) {
         //     .then(()=>{
         //         console.log("deleted")
         //     })
-        console.log("useeffectUser" + JSON.stringify(user))
-    })
+       if(connected){
+        props.setStompClient(stompClient)
+        console.log("stomp Client" + JSON.stringify())
+        navigateToHomePage()
+       }
+
+        return () => {
+            console.log(JSON.stringify(user))
+        //    connect()
+            
+        }
+    }, [connected])
 
     return (
         <div style={{
@@ -100,7 +104,7 @@ function Login(props) {
 
                 <CardContent>
                     <Typography variant="h5" component="div">
-                        Login
+                        Login 
                     </Typography>
                     <TextField onChange={(e) => { setName(e.target.value) }} id="standard-helperText" fullWidth={true} label="UserName" variant="standard" />
                     <TextField onChange={(e) => { setEmail(e.target.value) }} id="standard-helperText" fullWidth={true} label="Email" variant="standard" />
@@ -137,7 +141,7 @@ const mapDispatchToProps = (dispatch) => {
             dispatch({
                 payload: {
                     senderUserId: chatMessage.senderUserId,
-                    message: chatMessage.content
+                    message: chatMessage.message
                 },
                 type: "ADD_TO_CHAT_USER_LIST"
             })

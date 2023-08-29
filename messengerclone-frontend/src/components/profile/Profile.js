@@ -11,7 +11,7 @@ function Profile(props) {
 
 const mapStateToProps = (state) => {
     return {
-        user: state
+        user: state.userReducer.user
     }
 }
 

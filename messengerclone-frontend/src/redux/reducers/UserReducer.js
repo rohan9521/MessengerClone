@@ -8,10 +8,11 @@ const initialState = {
 
 const UserReducer = (state = initialState, action) => {
     console.log(JSON.stringify(action))
-    if (action.type == "SET_USER") {
-        state.user = action.payload
+    if (action.type === "SET_USER") {
+        state.user = {...action.payload}
     }
-    return state
+    console.log(JSON.stringify({...state}))
+    return {...state}
 }
 
 export default UserReducer
