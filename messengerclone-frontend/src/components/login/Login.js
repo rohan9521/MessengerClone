@@ -7,65 +7,43 @@ import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import axios from 'axios';
-import { over } from 'stompjs';
-import SockJS from 'sockjs-client';
-import userEvent from '@testing-library/user-event';
-function Login(props) {
-    var stompClient = null;
-    const [email, setEmail] = useState('')
-    const [name, setName] = useState('')
-    const [password, setPassword] = useState('')
 
+function Login(props) {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const navigate = useNavigate()
     const [user, setUser] = useState()
-    const [connected,setConnected] = useState(false)
+    const [loggedIn, setLoggedIn] = useState(false)
+
     let navigateToHomePage = () => {
         navigate('/feed/home')
     }
     let setUserInStore = async () => {
         console.log(JSON.stringify(props))
-        //{
-        //     name: name,
-        //     email: email,
-        //     password: password
-        // }
+
         await axios
             .get("http://localhost:8080/users/getUserByEmail/" + email)
             .then((response) => {
                 console.log(response)
                 setUser({
                     ...response.data
-                }
-                )
+                })
+
                 props.setUser({ ...response.data })
 
                 console.log(JSON.stringify(props))
-                // await setUser({
-                //   ...response.data
-                // })
 
                 console.log("response" + JSON.stringify(response.data.userId))
                 console.log("user" + JSON.stringify(props))
-                setConnected(true)
-             //   connect(response.data.userId)
-               
+
+                setLoggedIn(true)
+
             })
 
 
-    }
-
- 
-
-
-    const userJoin = () => {
-        // var chatMessage = {
-        //     senderName: user.name,
-        //     status: "JOIN"
-        // };
-        // stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
     }
 
     useEffect(() => {
@@ -74,45 +52,60 @@ function Login(props) {
         //     .then(()=>{
         //         console.log("deleted")
         //     })
-       if(connected){
-        props.setStompClient(stompClient)
-        console.log("stomp Client" + JSON.stringify())
-        navigateToHomePage()
-       }
+        if (loggedIn) {
+            navigateToHomePage()
+        }
 
         return () => {
             console.log(JSON.stringify(user))
-        //    connect()
-            
+            //    connect()
+
         }
-    }, [connected])
+    }, [loggedIn])
 
     return (
         <div style={{
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%'
+
+            height: '100vh'
         }}>
             <Card
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
+                    marginTop: '10%',
+                    width:'25%',
                     alignItems: 'center',
+                    height: '50vh'
                 }}
-                sx={{ maxWidth: 345 }}>
+                variant="outlined"
+            >
 
-                <CardContent>
+                <CardContent
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        width:'90%',
+                    }}
+                >
                     <Typography variant="h5" component="div">
-                        Login 
+                        Login
                     </Typography>
-                    <TextField onChange={(e) => { setName(e.target.value) }} id="standard-helperText" fullWidth={true} label="UserName" variant="standard" />
-                    <TextField onChange={(e) => { setEmail(e.target.value) }} id="standard-helperText" fullWidth={true} label="Email" variant="standard" />
-                    <TextField onChange={(e) => { setPassword(e.target.value) }} id="standard-helperText" fullWidth={true} label="password" variant="standard" />
+
+                    <TextField style={{ margin: '2%' }} onChange={(e) => { setEmail(e.target.value) }} id="standard-helperText" fullWidth={true} label="Email" variant="outlined" />
+                    <TextField style={{ margin: '2%' }} onChange={(e) => { setPassword(e.target.value) }} id="standard-helperText" fullWidth={true} label="password" variant="outlined" />
                 </CardContent>
+                <Typography variant="h10" component="div">
+                <Link to="/"> ForgotPassword ?</Link>
+                    </Typography>
                 <CardActions>
-                    <Button onClick={setUserInStore} style={{ color: 'blue' }} variant="outlined">Login</Button>
+                    <Button onClick={setUserInStore} color="primary" fullWidth={true} variant="contained">Login</Button>
                 </CardActions>
+                <Typography variant="h10" component="div">
+                        Don't have an account ? <Link to="/signup">SignUp</Link>
+                    </Typography>
             </Card>
         </div>
     )
@@ -131,21 +124,7 @@ const mapDispatchToProps = (dispatch) => {
                 type: "SET_USER"
             })
         },
-        setStompClient: (stompClient) => {
-            dispatch({
-                payload: stompClient,
-                type: "SET_STOMP_CLIENT"
-            })
-        },
-        setUserMessages: (chatMessage) => {
-            dispatch({
-                payload: {
-                    senderUserId: chatMessage.senderUserId,
-                    message: chatMessage.message
-                },
-                type: "ADD_TO_CHAT_USER_LIST"
-            })
-        }
+
     }
 }
 

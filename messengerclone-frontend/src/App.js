@@ -9,6 +9,7 @@ import GlobalStore from './redux/GlobalStore';
 import Profile from './components/profile/Profile';
 import SearchResults from './components/searchResults/SearchResults';
 import Feed from './components/feed/Feed';
+import SignUp from './components/signUp/SignUp';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' Component={Login} />
+          <Route path='/signup' Component={SignUp} />
           <Route path='/feed' Component={Feed} >
             <Route path='/feed/search' Component={SearchResults}/>
             <Route path='/feed/home' Component={HomePage}>
