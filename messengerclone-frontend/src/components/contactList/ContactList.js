@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import axios from 'axios'
 
 import fetchAllUsers from '../../redux/actions/FetchUsersAction'
+import ContactVIew from './ContactVIew'
 
 function ContactList(props) {
   console.log(JSON.stringify(props))
@@ -29,14 +30,11 @@ function ContactList(props) {
        props.chatUserObjectList.map((user) => (
             <div
               style={{
-                border: 'solid blue 2px',
-                borderRadius: '10px',
-                padding:'1%',
                 margin: '2%'
               }}
               onClick={() => { openUserChat(user) }}
             >
-              <p style={{ wordBreak: 'break-all' }}>{user.email}</p>
+              <ContactVIew user={user}/>
             </div>
        ))
       }

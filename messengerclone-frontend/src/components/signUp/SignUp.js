@@ -7,14 +7,16 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { TextField } from '@mui/material';
 import { useRef } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import LinearProgress from '@mui/material/LinearProgress';
 import { BASE_URL } from '../../utils/Constants';
 import { useEffect } from 'react';
 import FormData from 'form-data';
-function SignUp() {
+import { connect } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 
+function SignUp(props) {
+    const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [name,setName] = useState('')
@@ -42,7 +44,9 @@ function SignUp() {
                 password:password
             })
             .then((response)=>{
+              
                 setUser(response.data)
+               
             })
     }
 
@@ -62,15 +66,15 @@ function SignUp() {
     useEffect(()=>{
         if(profileImageId=='')
             return 
-        let data = new FormData()
-        data.append('Image',file)
         axios
         .post(BASE_URL+`users/setprofileimage`,{
             profileImageUrl:profileImageId,
             userId:user.userId
         })
         .then((response)=>{
-            console.log(JSON.stringify(response))
+            console.log("propsuser"+JSON.stringify(response))
+            props.setUser(response.data)
+            navigate('/feed/home')
         })
     },[profileImageId])
 
@@ -160,5 +164,21 @@ function SignUp() {
         </div>
     )
 }
+const mapStateToProps = (state) => {
+    return {
+        user: state.userReducer.user
+    }
+}
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setUser: (user) => {
+            dispatch({
+                payload: user,
+                type: "SET_USER"
+            })
+        },
 
-export default SignUp
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignUp)
